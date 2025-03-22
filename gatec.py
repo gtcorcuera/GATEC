@@ -1,79 +1,107 @@
 import tkinter as tk
-from tkinter import ttk
+import ttkbootstrap as ttk
+from ttkbootstrap import Style, Window, Button, Checkbutton, Entry, Frame, Label, LabelFrame, Combobox
 from tkinter.messagebox import showerror
-from tkinter import StringVar, BooleanVar
-import sv_ttk
+from tkinter import StringVar, BooleanVar, DoubleVar
 
-class App(tk.Tk):
+class FrameManager(ttk.Frame):
+    """Base class for all frames with common functionality"""
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+        self.grid(row=0, column=0, sticky="nsew")
+        
+    def on_show(self):
+        """Called when frame is shown - override in subclasses"""
+        pass
+    
+    def on_hide(self):
+        """Called when frame is hidden - override in subclasses"""
+        pass
+
+class App(ttk.Window):
     def __init__(self):
-        super().__init__()
+        super().__init__(themename='flatly')
         self.title("Total Efficiency Computation")
-        self.geometry(f"{int(self.winfo_screenwidth()*.7)}x{int(self.winfo_screenheight()*.8)}+0+0")
-        # self.state("zoomed")
-        self.resizable(False, False)
-        sv_ttk.set_theme("light")
+        # self.geometry(f"{int(self.winfo_screenwidth()*.7)}x{int(self.winfo_screenheight()*.8)}+0+0")
+        # self.resizable(False, False)
         self.system_font = "Roboto"
 
         # Contenedor principal para las pantallas
         self.container = tk.Frame(self)
         self.container.pack(fill="both", expand=True)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
 
-        # Diccionario para almacenar las pantallas
+        # Initialize current frame tracking
+        self.current_frame = None
+
+        # Initialize frames
         self.frames = {}
-        for F in (StartScreen, InputScreen, ResultScreen):
-            frame = F(self.container, self)
-            self.frames[F] = frame 
+        for FrameClass in (HomeScreen, InputScreen, ResultScreen):
+            frame = FrameClass(self.container, self)
+            self.frames[FrameClass] = frame  # Store with class as key, not class name
             frame.grid(row=0, column=0, sticky="nsew")
 
-        # Mostrar la pantalla de inicio
-        self.show_frame(StartScreen)
+        # Show home screen
+        self.show_frame(HomeScreen)
 
     def show_frame(self, frame_class):
-        """Muestra una pantalla específica."""
-        frame = self.frames[frame_class]
+        """Display a specific frame"""
+        # Call lifecycle methods
+        if self.current_frame:
+            self.current_frame.on_hide()
+            
+        frame = self.frames[frame_class]  # Use class directly as key
         frame.tkraise()
+        frame.on_show()
+        self.current_frame = frame
+        
+        return frame
 
-class Card(tk.Frame):
+class Card(ttk.Frame):
     def __init__(self, parent, controller, title, fuel, efficiency_drop, insight, width=None, height=None):
-        super().__init__(parent, relief="solid", bd=2, padx=10, pady=10)
+        super().__init__(parent, relief="solid", padding=(10,10))
         self.controller = controller
 
         # Create a frame for the two columns
-        self.column_frame = tk.Frame(self)
+        self.column_frame = ttk.Frame(self)
         self.column_frame.pack(fill="both", expand=True)
 
         # Column 1 - Set fixed width and allow text wrapping
-        self.column1 = tk.Frame(self.column_frame, width=self.winfo_screenwidth()*.245)
+        self.column1 = ttk.Frame(self.column_frame, width=self.winfo_screenwidth()*.245)
         self.column1.grid(row=0, column=0, sticky="nsew")
         self.column1.grid_propagate(False)  # Prevent frame from resizing based on content
 
         # Column 2 - Set fixed width and allow text wrapping
-        self.column2 = tk.Frame(self.column_frame, width=self.winfo_screenwidth()*.105)
+        self.column2 = ttk.Frame(self.column_frame, width=self.winfo_screenwidth()*.105)
         self.column2.grid(row=0, column=1, sticky="nsew")
         self.column2.grid_propagate(False)  # Prevent frame from resizing based on content
 
         # Add text to Column 1
-        self.title_label = tk.Label(self.column1, text=title, wraplength=self.winfo_screenwidth()*.245-50,
+        self.title_label = ttk.Label(self.column1, text=title,
                                     font=(self.controller.system_font, 14, "bold"),
                                     anchor="w", justify="left").pack(anchor="w")
-        self.eff_drop_label = tk.Label(self.column1, text=f"Total efficiency dropped: {efficiency_drop}",
-                                    wraplength=self.winfo_screenwidth()*.245-50, font=(self.controller.system_font, 10),
+        self.eff_drop_label = ttk.Label(self.column1, text=f"Total efficiency dropped: {efficiency_drop}",
+                                    font=(self.controller.system_font, 10),
                                     anchor="w", justify="left").pack(anchor="w")
-        self.insight_label = tk.Label(self.column1, text=insight, wraplength=self.winfo_screenwidth()*.245-50,
+        self.insight_label = ttk.Label(self.column1, text=insight,
                                     font=(self.controller.system_font, 10), anchor="w", justify="left").pack(anchor="w")
 
         # Add fuel label to Column 2
         fuel_colors = {
-            "Coal": "red",
-            "Natural gas": "green",
-            "Hydrogen": "blue",
+            "Coal": "inverse-dark",
+            "Natural gas": "inverse-success",
+            "Hydrogen": "inverse-info",
             # Add more fuel types as needed
         }
-        fuel_color = fuel_colors.get(fuel, "gray")  # Default to gray if fuel type not found
-        self.fuel_label = tk.Label(self.column2, text=fuel, wraplength=self.winfo_screenwidth()*.105-50,
-                                   bg=fuel_color, borderwidth=1, relief="solid",
-                                   height=1, width=1
-                                   )
+        fuel_color = fuel_colors.get(fuel, "inverse-secondary")  # Default to gray if fuel type not found
+        self.fuel_label = ttk.Label(self.column2, text=fuel,
+                                    borderwidth=1, relief="solid",
+                                    bootstyle=fuel_color,
+                                    padding=(5,5),
+                                    anchor='center'
+                                    )
         self.fuel_label.pack(anchor="e", padx=5, pady=5, fill="both", expand=True)
 
         self.view_button = ttk.Button(self.column2, text="View", padding=1, cursor="hand2",
@@ -85,16 +113,16 @@ class Card(tk.Frame):
         self.column_frame.grid_columnconfigure(0, weight=1)
         self.column_frame.grid_columnconfigure(1, weight=1)
 
-class StartScreen(tk.Frame):
+class HomeScreen(FrameManager):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        super().__init__(parent, controller)
         self.controller = controller
 
         # Title
-        self.title_label = tk.Label(self, text="GATEC", font=(self.controller.system_font, 40, "bold", "italic")).pack(padx=20, pady=20)
+        self.title_label = ttk.Label(self, text="GATEC", font=(self.controller.system_font, 40, "bold", "italic")).pack(padx=20, pady=20)
         
         # Create a frame for the cards
-        self.card_frame = tk.Frame(self)
+        self.card_frame = ttk.Frame(self)
         self.card_frame.pack(fill="both", expand=True)
 
         # Create some predefined data for the cards
@@ -135,7 +163,7 @@ class StartScreen(tk.Frame):
         # self.card_frame.grid_rowconfigure(2, weight=1)
 
         # Create the button to launch a new calculation
-        self.launch = ttk.Button(self, text="New calculation", padding=1, command=self.launch_calc)
+        self.launch = ttk.Button(self, text="New calculation", padding=(10,10), command=self.launch_calc)
         self.launch.pack(padx=20, pady=10, expand=True)
 
         # Make the parent window fill the entire available space
@@ -146,38 +174,16 @@ class StartScreen(tk.Frame):
     def launch_calc(self):
         self.controller.show_frame(InputScreen)
 
-class InputScreen(tk.Frame):
+    def on_show(self):
+        pass
+
+    def on_hide(self):
+        pass
+
+class InputScreen(FrameManager):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        super().__init__(parent, controller)
         self.controller = controller
-
-        # Create main container frame with scrollbar
-        main_container = ttk.Frame(self)
-        main_container.pack(fill="both", expand=True)
-
-        # Create canvas and configure it to expand
-        canvas = tk.Canvas(main_container)
-        scrollbar = ttk.Scrollbar(main_container, orient="vertical", command=canvas.yview)
-        
-        # Create scrollable frame
-        self.scrollable_frame = ttk.Frame(canvas)
-        
-        # Configure the canvas to expand horizontally and fill the window
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-        # Make the scrollable frame expand to canvas width
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        canvas.bind(
-            "<Configure>",
-            lambda e: canvas.itemconfig(frame_window, width=e.width)
-        )
-
-        # Create the window in the canvas and make it expand
-        frame_window = canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
 
         # Predefined values dictionary
         self.predefined_values = {
@@ -253,7 +259,8 @@ class InputScreen(tk.Frame):
         self.ccs_storage = tk.DoubleVar()
 
         # Power Plant Information
-        power_plant_frame = tk.LabelFrame(self.scrollable_frame, text="Power Plant Information", font=(self.controller.system_font, 14, "bold"))
+        power_plant_frame = ttk.LabelFrame(self, text="Power Plant Information"
+                            )
         power_plant_frame.pack(fill="x", padx=20, pady=10)
         # Create two column frames for power plant info
         left_column = tk.Frame(power_plant_frame)
@@ -264,17 +271,17 @@ class InputScreen(tk.Frame):
         # Left column - Efficiency
         frame1 = tk.Frame(left_column)
         frame1.pack(fill="x", padx=5, pady=10)
-        tk.Label(frame1, text="Current 'traditional' efficiency", width=25, anchor="w").pack(side="left")
+        ttk.Label(frame1, text="Current 'traditional' efficiency", width=25, anchor="w").pack(side="left")
         ttk.Entry(frame1, textvariable=self.plant_efficiency).pack(side="left", padx=20)
 
         # Right column - Location  
         frame2 = tk.Frame(right_column)
         frame2.pack(fill="x", padx=5, pady=10)
-        tk.Label(frame2, text="Location", width=25, anchor="w").pack(side="left")
+        ttk.Label(frame2, text="Location", width=25, anchor="w").pack(side="left")
         ttk.Entry(frame2, textvariable=self.plant_location).pack(side="left", padx=20)
 
         # Fuel Consumption (Preliminary Stages)
-        fuel_prelim_frame = tk.LabelFrame(self.scrollable_frame, text="Fuel Consumption (Preliminary Stages)", font=(self.controller.system_font, 14, "bold"))
+        fuel_prelim_frame = ttk.LabelFrame(self, text="Fuel Consumption (Preliminary Stages)")
         fuel_prelim_frame.pack(fill="x", padx=20, pady=5)
         
         # Fuel selection and predefined values toggle
@@ -283,13 +290,17 @@ class InputScreen(tk.Frame):
         
         tk.Label(fuel_select_frame, text="Select Fuel").pack(side="left")
         fuel_options = list(self.predefined_values.keys())
-        fuel_dropdown = ttk.Combobox(fuel_select_frame, values=fuel_options, textvariable=self.fuel_type)
+        fuel_dropdown = ttk.Combobox(fuel_select_frame,
+                                    values=fuel_options,
+                                    textvariable=self.fuel_type,
+                                    bootstyle='primary')
         fuel_dropdown.pack(side="left", padx=5, pady=5)
         
         # Add predefined values toggle
         ttk.Checkbutton(fuel_select_frame, text="Use predefined values", 
                        variable=self.use_predefined, 
-                       command=self.toggle_input_fields).pack(side="right")
+                       command=self.toggle_input_fields,
+                       bootstyle='round-toggle').pack(side="right")
 
         # Consumption inputs with labels and entries side by side
         self.consumption_entries = []
@@ -325,7 +336,7 @@ class InputScreen(tk.Frame):
             self.consumption_entries.append(entry)
         
         # CCS frame
-        fuel_other_frame = tk.LabelFrame(self.scrollable_frame, text="Carbon Capture and Storage (CCS)", font=(self.controller.system_font, 14, "bold"))
+        fuel_other_frame = ttk.LabelFrame(self, text="Carbon Capture and Storage (CCS)")
         fuel_other_frame.pack(fill="x", padx=20, pady=10)
         
         # CCS toggle and predefined values option
@@ -334,12 +345,14 @@ class InputScreen(tk.Frame):
         
         ttk.Checkbutton(ccs_header_frame, text="Include CCS", 
                        variable=self.ccs, 
-                       command=self.toggle_ccs_fields).pack(side="left")
+                       command=self.toggle_ccs_fields,
+                       bootstyle='round-toggle').pack(side="left")
         
         self.ccs_predefined_check = ttk.Checkbutton(ccs_header_frame, 
                                                    text="Use predefined values",
                                                    variable=self.use_predefined_ccs,
-                                                   command=self.toggle_ccs_fields)
+                                                   command=self.toggle_ccs_fields,
+                                                   bootstyle='round-toggle')
         self.ccs_predefined_check.pack(side="right")
 
         # CCS consumption fields
@@ -381,20 +394,22 @@ class InputScreen(tk.Frame):
         self.toggle_ccs_fields()
 
         # Optional Emissions (CO2)
-        emissions_frame = tk.LabelFrame(self.scrollable_frame, text="Optional Emissions (CO2)", font=(self.controller.system_font, 14, "bold"))
+        emissions_frame = ttk.LabelFrame(self, text="Optional Emissions (CO2)")
         emissions_frame.pack(fill="x", padx=20, pady=10)
-        ttk.Checkbutton(emissions_frame, text="Include Emissions Estimation", variable=self.include_emissions).pack(anchor="w")
+        ttk.Checkbutton(emissions_frame, text="Include Emissions Estimation",
+                        variable=self.include_emissions,
+                        bootstyle='round-toggle').pack(anchor="w")
         tk.Label(emissions_frame, text="Emissions (g CO2/kg fuel)").pack(anchor="w")
         ttk.Entry(emissions_frame, textvariable=self.emissions_value).pack(fill="x", padx=5, pady=5)
 
         # Sensitivity Analysis Option
-        sensitivity_frame = tk.LabelFrame(self.scrollable_frame, text="Sensitivity Analysis", font=(self.controller.system_font, 14, "bold"))
+        sensitivity_frame = tk.LabelFrame(self, text="Sensitivity Analysis", font=(self.controller.system_font, 14, "bold"))
         sensitivity_frame.pack(fill="x", padx=20, pady=10)
         tk.Label(sensitivity_frame, text="Interval").pack(anchor="w")
         ttk.Entry(sensitivity_frame, textvariable=self.sensitivity_value).pack(fill="x", padx=5, pady=5)
 
         # Run Button
-        run_button = ttk.Button(self.scrollable_frame, text="RUN", command=self.calculate_efficiency)
+        run_button = ttk.Button(self, text="RUN", command=self.calculate_efficiency)
         run_button.pack(pady=20)
 
         # Error label
@@ -461,49 +476,55 @@ class InputScreen(tk.Frame):
 
     def calculate_efficiency(self):
         try:
-            # Get all the values and perform calculations
-            # You can access the values using .get() on any of the variables
-            # For example: extraction_value = self.extraction.get()
-            
-            # Your existing calculation logic here
-            total_input = self.extraction.get() + self.processing.get() + self.transportation.get() + self.generation.get()
+            # Get values and perform calculations
+            total_input = self.extraction.get() + self.processing.get() + \
+                         self.transportation.get() + self.generation.get()
             efficiency = (self.generation.get() / total_input) * 100 if total_input > 0 else 0
 
             # Pass results to result screen
-            result_screen = self.controller.frames[ResultScreen]
+            result_screen = self.controller.frames[ResultScreen]  # Use class as key
             result_screen.display_results(efficiency, total_input, self.ccs.get())
             self.controller.show_frame(ResultScreen)
 
-        except ValueError:
-            self.error_label.config(text="Please enter valid numerical values.")
+        except Exception as e:
+            self.error_label.config(text=f"Calculation failed: {str(e)}")
 
+    def on_show(self):
+        pass
 
-class ResultScreen(tk.Frame):
+    def on_hide(self):
+        pass
+
+class ResultScreen(FrameManager):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        super().__init__(parent, controller)
         self.controller = controller
 
         # Título
-        tk.Label(self, text="Resultados", font=(self.controller.system_font, 16)).pack(pady=20)
+        tk.Label(self, text="Results", font=(self.controller.system_font, 16)).pack(pady=20)
 
         # Resumen de resultados
         self.result_label = tk.Label(self, text="", font=(self.controller.system_font, 14))
         self.result_label.pack(pady=10)
 
         # Botón para volver al inicio
-        back_button = tk.Button(self, text="Volver al Inicio",
-                                 command=lambda: controller.show_frame(StartScreen))
+        back_button = ttk.Button(self, text="Volver al Inicio",
+                                 command=lambda: controller.show_frame(HomeScreen))
         back_button.pack(pady=20)
 
     def display_results(self, efficiency, total_input, ccs):
-        ccs_text = "con" if ccs else "sin"
+        ccs_text = "Yes" if ccs else "No"
         self.result_label.config(
-            text=f"Eficiencia calculada: {efficiency:.2f}%\n"
-                 f"Consumo total: {total_input:.2f} unidades\n"
-                 f"Uso de CCS: {ccs_text}"
+            text=f"Total efficiency: {efficiency:.2f}%\n"
+                 f"Total energy consumption: {total_input:.2f} MJ/kg\n"
+                 f"CCS implementation? {ccs_text}"
         )
     
+    def on_show(self):
+        pass
 
+    def on_hide(self):
+        pass
 
 if __name__ == "__main__":
     app = App()
