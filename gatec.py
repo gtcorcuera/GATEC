@@ -848,7 +848,7 @@ class ResultScreen(FrameManager):
             # 2. Calculate total efficiency
             try:
                 if total_energy > 0:
-                    results['total_efficiency'] = (generation / total_energy) * 100
+                    results['total_efficiency'] = (total_output / total_energy) * 100
                 else:
                     results['total_efficiency'] = 0.0
             except Exception as e:
@@ -889,7 +889,7 @@ class ResultScreen(FrameManager):
                     for percentage in [80, 85, 90, 95, 100]:
                         adjusted_ccs = ccs_energy * (percentage/100)
                         adjusted_total = extraction + processing + transportation + generation + adjusted_ccs
-                        eff = (generation / adjusted_total) * 100 if adjusted_total > 0 else 0
+                        eff = (total_output / adjusted_total) * 100 if adjusted_total > 0 else 0
                         results['ccs_sensitivity'].append(eff)
                 else:
                     results['ccs_sensitivity'] = [results['total_efficiency']] * 5
