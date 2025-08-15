@@ -196,36 +196,33 @@ class InputScreen(FrameManager):
         # Predefined values dictionary
         self.predefined_values = {
             "Coal": {
-                "extraction": 0.15,
-                "processing": 0.08,
-                "transportation": 0.12,
-                "generation": 0.65,
+                "extraction": 15,
+                "processing": 8,
+                "transportation": 12,
                 "emissions": 2.42,
                 "ccs": {
-                    "capture": 0.20,
-                    "compression": 0.15,
-                    "transportation": 0.10,
-                    "storage": 0.05
+                    "capture": 20,
+                    "compression": 15,
+                    "transportation": 45,
+                    "storage": 5
                 }
             },
             "Natural gas": {
-                "extraction": 0.10,
-                "processing": 0.12,
-                "transportation": 0.15,
-                "generation": 0.63,
+                "extraction": 10,
+                "processing": 12,
+                "transportation": 15,
                 "emissions": 2.75,
                 "ccs": {
-                    "capture": 0.18,
-                    "compression": 0.12,
-                    "transportation": 0.08,
-                    "storage": 0.04
+                    "capture": 23,
+                    "compression": 15,
+                    "transportation": 46,
+                    "storage": 5
                 }
             },
             "Hydrogen": {
-                "extraction": 0.20,
-                "processing": 0.25,
-                "transportation": 0.10,
-                "generation": 0.45,
+                "extraction": 20,
+                "processing": 25,
+                "transportation": 10,
                 "emissions": 0.0,
                 "ccs": {
                     "capture": 0,
@@ -235,16 +232,15 @@ class InputScreen(FrameManager):
                 }
             },
             "Diesel": {
-                "extraction": 0.12,
-                "processing": 0.15,
-                "transportation": 0.08,
-                "generation": 0.65,
+                "extraction": 12,
+                "processing": 15,
+                "transportation": 8,
                 "emissions": 2.98,
                 "ccs": {
-                    "capture": 0.18,
-                    "compression": 0.12,
-                    "transportation": 0.08,
-                    "storage": 0.04
+                    "capture": 18,
+                    "compression": 15,
+                    "transportation": 46,
+                    "storage": 5
                 }
             }
         }
@@ -487,7 +483,7 @@ class InputScreen(FrameManager):
                 
             # Calculate generation as efficiency * total_output
             if total_output > 0 and efficiency > 0:
-                generation_value = (efficiency / 100) * total_output  # Convert % to decimal
+                generation_value = total_output / (efficiency / 100)  # Convert % to decimal
                 self.generation.set(round(generation_value, 2))
             else:
                 self.generation.set(0.0)
@@ -804,6 +800,7 @@ class ResultScreen(FrameManager):
             
             # Initialize default values for all calculations
             defaults = {
+                'total_output': 0,
                 'extraction': 0,
                 'processing': 0,
                 'transportation': 0,
@@ -820,6 +817,7 @@ class ResultScreen(FrameManager):
             
             # Safely get all input values with defaults
             try:
+                total_output = float(input_data.get('total_output', defaults['total_output']))
                 extraction = float(input_data.get('extraction', defaults['extraction']))
                 processing = float(input_data.get('processing', defaults['processing']))
                 transportation = float(input_data.get('transportation', defaults['transportation']))
