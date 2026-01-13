@@ -1,0 +1,114 @@
+{
+    "card_data": [
+        {
+            "title": "Ferry's Plant - United Kingdom",
+            "fuel": "Coal",
+            "efficiency_drop": "10%",
+            "insight": "Good performance"
+        },
+        {
+            "title": "Aix-en-Provence Plant - France",
+            "fuel": "Hydrogen",
+            "efficiency_drop": "60%",
+            "insight": "Terrible"
+        },
+        {
+            "title": "La Sagra Power Plant - Spain",
+            "fuel": "Natural gas",
+            "efficiency_drop": "5%",
+            "insight": "Excellent"
+        },
+        {
+            "title": "Goose bay Plant - Canada",
+            "fuel": "Coal",
+            "efficiency_drop": "20%",
+            "insight": "Needs improvement"
+        },
+        {
+            "title": "Additional Plant - Location",
+            "fuel": "Biomass",
+            "efficiency_drop": "30%",
+            "insight": "Average performance"
+        },
+        {
+            "title": "Example Plant - Country",
+            "fuel": "Natural gas",
+            "efficiency_drop": "15%",
+            "insight": "Good performance"
+        },
+        {
+            "title": "Additional Plant - Location",
+            "fuel": "Biomass",
+            "efficiency_drop": "30%",
+            "insight": "Average performance"
+        },
+        {
+            "title": "Example Plant - Country",
+            "fuel": "Natural gas",
+            "efficiency_drop": "15%",
+            "insight": "Good performance"
+        },
+        {
+            "title": "Additional Plant - Location",
+            "fuel": "Biomass",
+            "efficiency_drop": "30%",
+            "insight": "Average performance"
+        },
+        {
+            "title": "Example Plant - Country",
+            "fuel": "Natural gas",
+            "efficiency_drop": "15%",
+            "insight": "Good performance"
+        }
+    ],
+    "predefined_values": {
+        "Coal": {
+            "extraction": 15,
+            "processing": 8,
+            "transportation": 12,
+            "emissions": 2.42,
+            "ccs": {
+                "capture": 20,
+                "compression": 15,
+                "transportation": 45,
+                "storage": 5
+            }
+        },
+        "Natural gas": {
+            "extraction": 10,
+            "processing": 12,
+            "transportation": 15,
+            "emissions": 2.75,
+            "ccs": {
+                "capture": 23,
+                "compression": 15,
+                "transportation": 46,
+                "storage": 5
+            }
+        },
+        "Hydrogen": {
+            "extraction": 20,
+            "processing": 25,
+            "transportation": 10,
+            "emissions": 0.0,
+            "ccs": {
+                "capture": 0,
+                "compression": 0,
+                "transportation": 0,
+                "storage": 0
+            }
+        },
+        "Diesel": {
+            "extraction": 12,
+            "processing": 15,
+            "transportation": 8,
+            "emissions": 2.98,
+            "ccs": {
+                "capture": 18,
+                "compression": 15,
+                "transportation": 46,
+                "storage": 5
+            }
+        }
+    }
+}
